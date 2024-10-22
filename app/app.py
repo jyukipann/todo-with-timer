@@ -1,4 +1,4 @@
-import os
+import pathlib
 import streamlit as st
 import sqlite3
 import time
@@ -8,7 +8,8 @@ DB_PATH = "/app/data/tasks.db"
 
 # SQLiteデータベースの初期化
 def init_db():
-    if not os.path.exists(DB_PATH):
+    if not pathlib.Path(DB_PATH).exists():
+        pathlib.Path(DB_PATH).parent.mkdir(parents=True, exist_ok=True)
         conn = sqlite3.connect(DB_PATH)
         c = conn.cursor()
         c.execute('''
@@ -90,32 +91,34 @@ tasks = load_tasks()
 for task in tasks:
     task_id, name, estimated_time, elapsed_time, is_running, start_time = task
     with st.container():
-        st.write(f"### {name}")
-        st.write(f"Estimated Time: {estimated_time} minutes")
-        st.write(f"Elapsed Time: {(elapsed_time // 60):02d}:{(elapsed_time % 60):02d}{' (Running😎)' if is_running else ''}")
+        st.write(f"### {name}{' (Running😎)' if is_running else ''}")
+        cols = st.columns(2)
+        with cols[0]:
+            st.write(f"Estimated Time: {estimated_time} min")
+        with cols[1]:
+            st.write(f"Elapsed Time: {(elapsed_time // 60):02d}:{(elapsed_time % 60):02d}")
 
+        cols = st.columns(3)
         # タイマーの制御
-        if is_running:
-            elapsed_time = elapsed_time + int(time.time() - start_time)
-            col1, col2 = st.columns(2)
-            with col1:
-                if st.button(f"Stop", key=f"stop_{task_id}"):
+        with cols[0]:
+            if is_running:
+                elapsed_time = elapsed_time + int(time.time() - start_time)
+                if st.button(f"Stop", key=f"stop_{task_id}", use_container_width=True, type="primary"):
                     update_task(task_id, is_running=0, elapsed_time=elapsed_time)
                     st.rerun()
-            with col2:
-                if st.button(f"Reset", key=f"reset_{task_id}"):
-                    update_task(task_id, elapsed_time=0, is_running=0)
+            else:
+                if st.button(f"Start", key=f"start_{task_id}", use_container_width=True, type="primary"):
+                    update_task(task_id, is_running=1, start_time=time.time())
                     st.rerun()
-        else:
-            if st.button(f"Start", key=f"start_{task_id}"):
-                update_task(task_id, is_running=1, start_time=time.time())
+        with cols[1]:
+            if st.button(f"Reset", key=f"reset_{task_id}", use_container_width=True):
+                update_task(task_id, elapsed_time=0, is_running=0)
                 st.rerun()
-
-        # タスクの削除
-        if st.button(f"Delete", key=f"delete_{task_id}"):
-            delete_task(task_id)
-            st.success(f"Task '{name}' deleted successfully!")
-            st.rerun()
+        with cols[2]:
+            if st.button(f"Delete", key=f"delete_{task_id}", use_container_width=True, type="secondary"):
+                delete_task(task_id)
+                st.success(f"Task '{name}' deleted successfully!")
+                st.rerun()
 
 # タイマーの定期更新
 if any(task[4] for task in tasks):  # いずれかのタスクが実行中かどうか
