@@ -91,12 +91,12 @@ tasks = load_tasks()
 for task in tasks:
     task_id, name, estimated_time, elapsed_time, is_running, start_time = task
     with st.container(border=True):
-        st.write(f"### {name}{' (Running😎)' if is_running else ''}")
+        st.write(f"#### {name}{' (Running😎)' if is_running else ''}")
         cols = st.columns(2)
         with cols[0]:
             st.write(f"Estimated Time: {estimated_time} min")
         with cols[1]:
-            st.write(f"Elapsed Time: {(elapsed_time // 60):02d}:{(elapsed_time % 60):02d}")
+            st.write(f"Elapsed Time: **{(elapsed_time // 60):02d}:{(elapsed_time % 60):02d}**")
 
         cols = st.columns(3)
         # タイマーの制御
