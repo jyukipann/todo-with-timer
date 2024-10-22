@@ -90,7 +90,7 @@ with st.form("add_task_form"):
 tasks = load_tasks()
 for task in tasks:
     task_id, name, estimated_time, elapsed_time, is_running, start_time = task
-    with st.container():
+    with st.container(border=True):
         st.write(f"### {name}{' (Running😎)' if is_running else ''}")
         cols = st.columns(2)
         with cols[0]:
