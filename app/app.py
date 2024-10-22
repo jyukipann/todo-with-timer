@@ -49,20 +49,22 @@ def load_tasks():
 def update_task(task_id, elapsed_time=None, is_running=None, start_time=None, sort_order=None):
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
+    query = lambda x: f'UPDATE tasks SET {x} = ? WHERE id = ?'
     if elapsed_time is not None:
-        c.execute('UPDATE tasks SET elapsed_time = ? WHERE id = ?', (elapsed_time, task_id))
+        c.execute(query('elapsed_time'), (elapsed_time, task_id))
     if is_running is not None:
-        c.execute('UPDATE tasks SET is_running = ? WHERE id = ?', (is_running, task_id))
+        c.execute(query('is_running'), (is_running, task_id))
     if start_time is not None:
-        c.execute('UPDATE tasks SET start_time = ? WHERE id = ?', (start_time, task_id))
+        c.execute(query('start_time'), (start_time, task_id))
     if sort_order is not None and sort_order >= 0:
         # swap sort_order
         current_sort_order = c.execute('SELECT sort_order FROM tasks WHERE id = ?', (task_id,)).fetchone()[0]
         old_sort_oder_task_id = c.execute('SELECT id FROM tasks WHERE sort_order = ?', (sort_order,)).fetchone()
         if old_sort_oder_task_id is not None:
-            c.execute('UPDATE tasks SET sort_order = ? WHERE id = ?', (sort_order, task_id))
+            query = 'UPDATE tasks SET sort_order = ? WHERE id = ?'
+            c.execute(query, (sort_order, task_id))
             old_sort_oder_task_id = old_sort_oder_task_id[0]
-            c.execute('UPDATE tasks SET sort_order = ? WHERE id = ?', (current_sort_order, old_sort_oder_task_id))
+            c.execute(query, (current_sort_order, old_sort_oder_task_id))
     conn.commit()
     conn.close()
 
