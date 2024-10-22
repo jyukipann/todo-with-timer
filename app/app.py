@@ -46,7 +46,7 @@ def load_tasks():
     return tasks
 
 # タスクの更新
-def update_task(task_id, elapsed_time=None, is_running=None, start_time=None):
+def update_task(task_id, elapsed_time=None, is_running=None, start_time=None, sort_order=None):
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     if elapsed_time is not None:
@@ -55,6 +55,14 @@ def update_task(task_id, elapsed_time=None, is_running=None, start_time=None):
         c.execute('UPDATE tasks SET is_running = ? WHERE id = ?', (is_running, task_id))
     if start_time is not None:
         c.execute('UPDATE tasks SET start_time = ? WHERE id = ?', (start_time, task_id))
+    if sort_order is not None and sort_order >= 0:
+        # swap sort_order
+        current_sort_order = c.execute('SELECT sort_order FROM tasks WHERE id = ?', (task_id,)).fetchone()[0]
+        old_sort_oder_task_id = c.execute('SELECT id FROM tasks WHERE sort_order = ?', (sort_order,)).fetchone()
+        if old_sort_oder_task_id is not None:
+            c.execute('UPDATE tasks SET sort_order = ? WHERE id = ?', (sort_order, task_id))
+            old_sort_oder_task_id = old_sort_oder_task_id[0]
+            c.execute('UPDATE tasks SET sort_order = ? WHERE id = ?', (current_sort_order, old_sort_oder_task_id))
     conn.commit()
     conn.close()
 
@@ -91,7 +99,7 @@ with st.form("add_task_form"):
 
 # タスクの表示
 tasks = load_tasks()
-for task in tasks:
+for i, task in enumerate(tasks):
     task_id, name, estimated_time, elapsed_time, is_running, start_time, sort_order = task
     with st.container(border=True):
         st.write(f"#### {name}{' (Running😎)' if is_running else ''}")
@@ -113,12 +121,20 @@ for task in tasks:
                 if st.button(f"Start", key=f"start_{task_id}", use_container_width=True, type="primary"):
                     update_task(task_id, is_running=1, start_time=time.time())
                     st.rerun()
-        cols = st.columns(2)
+        cols = st.columns(4)
         with cols[0]:
+            if st.button(f"Move Up", key=f"move_up_{task_id}", use_container_width=True, disabled=sort_order==1):
+                update_task(task_id, sort_order=sort_order-1)
+                st.rerun()
+        with cols[1]:
+            if st.button(f"Move Down", key=f"move_down_{task_id}", use_container_width=True, disabled=sort_order==len(tasks)):
+                update_task(task_id, sort_order=sort_order+1)
+                st.rerun()
+        with cols[2]:
             if st.button(f"Reset", key=f"reset_{task_id}", use_container_width=True):
                 update_task(task_id, elapsed_time=0, is_running=0)
                 st.rerun()
-        with cols[1]:
+        with cols[3]:
             if st.button(f"Delete Task", key=f"delete_{task_id}", use_container_width=True):
                 delete_task(task_id)
                 st.success(f"Task '{name}' deleted successfully!")
