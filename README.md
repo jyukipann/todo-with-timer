@@ -10,7 +10,7 @@ The system features automatic timer updates and ensures accurate time tracking f
 todo-with-timer/
     ├── docker-compose.yml
     ├── Dockerfile
-    ├── app/
+    └── app/
         ├── app.py
         └── data/
             └── tasks.db
