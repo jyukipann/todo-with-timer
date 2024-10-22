@@ -81,7 +81,7 @@ st.title("TODO Management System")
 with st.form("add_task_form"):
     task_name = st.text_input("Task Name")
     estimated_time = st.number_input("Estimated Time (minutes)", min_value=1, step=1)
-    add_task_button = st.form_submit_button("Add Task")
+    add_task_button = st.form_submit_button("Add Task", use_container_width=True)
     if add_task_button:
         add_task(task_name, estimated_time)
         st.success(f"Task '{task_name}' added successfully!")
