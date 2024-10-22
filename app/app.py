@@ -89,30 +89,31 @@ with st.form("add_task_form"):
 tasks = load_tasks()
 for task in tasks:
     task_id, name, estimated_time, elapsed_time, is_running, start_time = task
-    st.write(f"### {name}")
-    st.write(f"Estimated Time: {estimated_time} minutes")
-    st.write(f"Elapsed Time: {elapsed_time // 60} minutes {elapsed_time % 60} seconds")
+    with st.container():
+        st.write(f"### {name}")
+        st.write(f"Estimated Time: {estimated_time} minutes")
+        st.write(f"Elapsed Time: {elapsed_time // 60} minutes {elapsed_time % 60} seconds")
 
-    # タイマーの制御
-    if is_running:
-        elapsed_time = elapsed_time + int(time.time() - start_time)
-        st.write(f"Running... {elapsed_time // 60} minutes {elapsed_time % 60} seconds")
-        if st.button(f"Stop {name}", key=f"stop_{task_id}"):
-            update_task(task_id, is_running=0, elapsed_time=elapsed_time)
-            st.rerun()
-        if st.button(f"Reset {name}", key=f"reset_{task_id}"):
-            update_task(task_id, elapsed_time=0, is_running=0)
-            st.rerun()
-    else:
-        if st.button(f"Start {name}", key=f"start_{task_id}"):
-            update_task(task_id, is_running=1, start_time=time.time())
-            st.rerun()
+        # タイマーの制御
+        if is_running:
+            elapsed_time = elapsed_time + int(time.time() - start_time)
+            st.write(f"Running... {elapsed_time // 60} minutes {elapsed_time % 60} seconds")
+            if st.button(f"Stop {name}", key=f"stop_{task_id}"):
+                update_task(task_id, is_running=0, elapsed_time=elapsed_time)
+                st.rerun()
+            if st.button(f"Reset {name}", key=f"reset_{task_id}"):
+                update_task(task_id, elapsed_time=0, is_running=0)
+                st.rerun()
+        else:
+            if st.button(f"Start {name}", key=f"start_{task_id}"):
+                update_task(task_id, is_running=1, start_time=time.time())
+                st.rerun()
 
-    # タスクの削除
-    if st.button(f"Delete {name}", key=f"delete_{task_id}"):
-        delete_task(task_id)
-        st.success(f"Task '{name}' deleted successfully!")
-        st.rerun()
+        # タスクの削除
+        if st.button(f"Delete {name}", key=f"delete_{task_id}"):
+            delete_task(task_id)
+            st.success(f"Task '{name}' deleted successfully!")
+            st.rerun()
 
 # タイマーの定期更新
 if any(task[4] for task in tasks):  # いずれかのタスクが実行中かどうか
