@@ -97,20 +97,19 @@ for task in tasks:
         # タイマーの制御
         if is_running:
             elapsed_time = elapsed_time + int(time.time() - start_time)
-            st.write(f"Running... {elapsed_time // 60} minutes {elapsed_time % 60} seconds")
-            if st.button(f"Stop {name}", key=f"stop_{task_id}"):
+            if st.button(f"Stop", key=f"stop_{task_id}"):
                 update_task(task_id, is_running=0, elapsed_time=elapsed_time)
                 st.rerun()
-            if st.button(f"Reset {name}", key=f"reset_{task_id}"):
+            if st.button(f"Reset", key=f"reset_{task_id}"):
                 update_task(task_id, elapsed_time=0, is_running=0)
                 st.rerun()
         else:
-            if st.button(f"Start {name}", key=f"start_{task_id}"):
+            if st.button(f"Start", key=f"start_{task_id}"):
                 update_task(task_id, is_running=1, start_time=time.time())
                 st.rerun()
 
         # タスクの削除
-        if st.button(f"Delete {name}", key=f"delete_{task_id}"):
+        if st.button(f"Delete", key=f"delete_{task_id}"):
             delete_task(task_id)
             st.success(f"Task '{name}' deleted successfully!")
             st.rerun()
