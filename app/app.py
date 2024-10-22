@@ -115,7 +115,7 @@ for task in tasks:
                 update_task(task_id, elapsed_time=0, is_running=0)
                 st.rerun()
         with cols[2]:
-            if st.button(f"Delete", key=f"delete_{task_id}", use_container_width=True, type="secondary"):
+            if st.button(f"Delete", key=f"delete_{task_id}", use_container_width=True):
                 delete_task(task_id)
                 st.success(f"Task '{name}' deleted successfully!")
                 st.rerun()
