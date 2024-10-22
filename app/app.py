@@ -97,12 +97,15 @@ for task in tasks:
         # タイマーの制御
         if is_running:
             elapsed_time = elapsed_time + int(time.time() - start_time)
-            if st.button(f"Stop", key=f"stop_{task_id}"):
-                update_task(task_id, is_running=0, elapsed_time=elapsed_time)
-                st.rerun()
-            if st.button(f"Reset", key=f"reset_{task_id}"):
-                update_task(task_id, elapsed_time=0, is_running=0)
-                st.rerun()
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button(f"Stop", key=f"stop_{task_id}"):
+                    update_task(task_id, is_running=0, elapsed_time=elapsed_time)
+                    st.rerun()
+            with col2:
+                if st.button(f"Reset", key=f"reset_{task_id}"):
+                    update_task(task_id, elapsed_time=0, is_running=0)
+                    st.rerun()
         else:
             if st.button(f"Start", key=f"start_{task_id}"):
                 update_task(task_id, is_running=1, start_time=time.time())
