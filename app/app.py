@@ -19,7 +19,8 @@ def init_db():
                 estimated_time INTEGER NOT NULL,
                 elapsed_time INTEGER NOT NULL DEFAULT 0,
                 is_running BOOLEAN NOT NULL DEFAULT 0,
-                start_time REAL
+                start_time REAL,
+                sort_order INTEGER DEFAULT 0
             )
         ''')
         conn.commit()
@@ -29,7 +30,9 @@ def init_db():
 def add_task(name, estimated_time):
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
-    c.execute('INSERT INTO tasks (name, estimated_time) VALUES (?, ?)', (name, estimated_time))
+    c.execute('SELECT COALESCE(MAX(sort_order), 0) + 1 FROM tasks')
+    next_sort_order = c.fetchone()[0]
+    c.execute('INSERT INTO tasks (name, estimated_time, sort_order) VALUES (?, ?, ?)', (name, estimated_time, next_sort_order))
     conn.commit()
     conn.close()
 
@@ -37,7 +40,7 @@ def add_task(name, estimated_time):
 def load_tasks():
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
-    c.execute('SELECT * FROM tasks')
+    c.execute('SELECT * FROM tasks ORDER BY sort_order')
     tasks = c.fetchall()
     conn.close()
     return tasks
@@ -67,7 +70,7 @@ def delete_task(task_id):
 def update_timer():
     tasks = load_tasks()
     for task in tasks:
-        task_id, name, estimated_time, elapsed_time, is_running, start_time = task
+        task_id, _, _, elapsed_time, is_running, start_time, _ = task
         if is_running:
             current_time = time.time()
             new_elapsed_time = elapsed_time + int(current_time - start_time)
@@ -89,18 +92,18 @@ with st.form("add_task_form"):
 # タスクの表示
 tasks = load_tasks()
 for task in tasks:
-    task_id, name, estimated_time, elapsed_time, is_running, start_time = task
+    task_id, name, estimated_time, elapsed_time, is_running, start_time, sort_order = task
     with st.container(border=True):
         st.write(f"#### {name}{' (Running😎)' if is_running else ''}")
-        cols = st.columns(2)
+        cols = st.columns([1,1,1,3])
         with cols[0]:
-            st.write(f"Estimated Time: {estimated_time} min")
+            st.write(f"Order: {sort_order}")
         with cols[1]:
-            st.write(f"Elapsed Time: **{(elapsed_time // 60):02d}:{(elapsed_time % 60):02d}**")
-
-        cols = st.columns(3)
-        # タイマーの制御
-        with cols[0]:
+            st.write(f"ETA: **{estimated_time} min**")
+        with cols[2]:
+            st.write(f"ET: **{(elapsed_time // 60):02d}:{(elapsed_time % 60):02d}**")
+        with cols[3]:
+            # タイマーの制御
             if is_running:
                 elapsed_time = elapsed_time + int(time.time() - start_time)
                 if st.button(f"Stop", key=f"stop_{task_id}", use_container_width=True, type="primary"):
@@ -110,12 +113,13 @@ for task in tasks:
                 if st.button(f"Start", key=f"start_{task_id}", use_container_width=True, type="primary"):
                     update_task(task_id, is_running=1, start_time=time.time())
                     st.rerun()
-        with cols[1]:
+        cols = st.columns(2)
+        with cols[0]:
             if st.button(f"Reset", key=f"reset_{task_id}", use_container_width=True):
                 update_task(task_id, elapsed_time=0, is_running=0)
                 st.rerun()
-        with cols[2]:
-            if st.button(f"Delete", key=f"delete_{task_id}", use_container_width=True):
+        with cols[1]:
+            if st.button(f"Delete Task", key=f"delete_{task_id}", use_container_width=True):
                 delete_task(task_id)
                 st.success(f"Task '{name}' deleted successfully!")
                 st.rerun()
