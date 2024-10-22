@@ -92,7 +92,7 @@ for task in tasks:
     with st.container():
         st.write(f"### {name}")
         st.write(f"Estimated Time: {estimated_time} minutes")
-        st.write(f"Elapsed Time: {elapsed_time // 60} minutes {elapsed_time % 60} seconds")
+        st.write(f"Elapsed Time: {elapsed_time // 60}:{(elapsed_time % 60):02d}")
 
         # タイマーの制御
         if is_running:
