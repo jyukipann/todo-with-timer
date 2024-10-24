@@ -113,7 +113,7 @@ for i, task in enumerate(tasks):
             st.write(f"#### {name} (Running😎)")
         cols = st.columns([1,1,1,3])
         with cols[0]:
-            st.write(f"Order: {sort_order}")
+            st.write(f"Order: {i+1}({sort_order})")
         with cols[1]:
             st.write(f"ETA: **{estimated_time} min**")
         with cols[2]:
@@ -131,12 +131,12 @@ for i, task in enumerate(tasks):
                     st.rerun()
         cols = st.columns(4)
         with cols[0]:
-            if st.button(f"Move Up", key=f"move_up_{task_id}", use_container_width=True, disabled=sort_order==1):
-                update_task(task_id, sort_order=sort_order-1)
+            if st.button(f"Move Up", key=f"move_up_{task_id}", use_container_width=True, disabled=i==0):
+                update_task(task_id, sort_order=i-1)
                 st.rerun()
         with cols[1]:
-            if st.button(f"Move Down", key=f"move_down_{task_id}", use_container_width=True, disabled=sort_order==(len(tasks)+1)):
-                update_task(task_id, sort_order=sort_order+1)
+            if st.button(f"Move Down", key=f"move_down_{task_id}", use_container_width=True, disabled=i==(len(tasks)-1)):
+                update_task(task_id, sort_order=i+1)
                 st.rerun()
         with cols[2]:
             if st.button(f"Reset", key=f"reset_{task_id}", use_container_width=True):
