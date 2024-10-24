@@ -3,7 +3,7 @@ import streamlit as st # type: ignore
 import sqlite3
 import time
 
-# SQLiteデータベースの初期化
+# SQLiteデータベースのパス
 DB_PATH = "/app/data/tasks.db"
 
 # SQLiteデータベースの初期化
