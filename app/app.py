@@ -57,14 +57,11 @@ def update_task(task_id, elapsed_time=None, is_running=None, start_time=None, so
     if start_time is not None:
         c.execute(query('start_time'), (start_time, task_id))
     if sort_order is not None and sort_order >= 0:
-        # swap sort_order
-        current_sort_order = c.execute('SELECT sort_order FROM tasks WHERE id = ?', (task_id,)).fetchone()[0]
-        old_sort_oder_task_id = c.execute('SELECT id FROM tasks WHERE sort_order = ?', (sort_order,)).fetchone()
-        if old_sort_oder_task_id is not None:
-            query = 'UPDATE tasks SET sort_order = ? WHERE id = ?'
-            c.execute(query, (sort_order, task_id))
-            old_sort_oder_task_id = old_sort_oder_task_id[0]
-            c.execute(query, (current_sort_order, old_sort_oder_task_id))
+        # sort_orderがsort_order以上のタスクのsort_orderを1つずつ増やす
+        query = 'UPDATE tasks SET sort_order = sort_order + 1 WHERE sort_order >= ?'
+        c.execute(query, (sort_order,))
+        query = 'UPDATE tasks SET sort_order = ? WHERE id = ?'
+        c.execute(query, (sort_order, task_id))
     conn.commit()
     conn.close()
 
