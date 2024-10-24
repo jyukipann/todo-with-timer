@@ -91,20 +91,26 @@ init_db()
 st.title("TODO Management System")
 
 # タスクの追加
-with st.form("add_task_form"):
-    task_name = st.text_input("Task Name")
-    estimated_time = st.number_input("Estimated Time (minutes)", min_value=1, step=1)
-    add_task_button = st.form_submit_button("Add Task", use_container_width=True)
-    if add_task_button:
-        add_task(task_name, estimated_time)
-        st.success(f"Task '{task_name}' added successfully!")
+with st.expander("Add Task Form", expanded=True):
+    with st.form("add_task_form", border=False):
+        task_name = st.text_input("Task Name")
+        estimated_time = st.number_input("Estimated Time (minutes)", min_value=1, step=1)
+        add_task_button = st.form_submit_button("Add Task", use_container_width=True)
+        if add_task_button:
+            add_task(task_name, estimated_time)
+            st.success(f"Task '{task_name}' added successfully!")
 
 # タスクの表示
 tasks = load_tasks()
 for i, task in enumerate(tasks):
     task_id, name, estimated_time, elapsed_time, is_running, start_time, sort_order = task
-    with st.container(border=True):
-        st.write(f"#### {name}{' (Running😎)' if is_running else ''}")
+    if is_running:
+        container = st.container(border=True)
+    else:
+        container = st.expander(f"{name}", expanded=True)
+    with container:
+        if is_running:
+            st.write(f"#### {name} (Running😎)")
         cols = st.columns([1,1,1,3])
         with cols[0]:
             st.write(f"Order: {sort_order}")
