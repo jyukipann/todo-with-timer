@@ -129,7 +129,7 @@ for i, task in enumerate(tasks):
                 update_task(task_id, sort_order=sort_order-1)
                 st.rerun()
         with cols[1]:
-            if st.button(f"Move Down", key=f"move_down_{task_id}", use_container_width=True, disabled=sort_order==len(tasks)):
+            if st.button(f"Move Down", key=f"move_down_{task_id}", use_container_width=True, disabled=sort_order==(len(tasks)+1)):
                 update_task(task_id, sort_order=sort_order+1)
                 st.rerun()
         with cols[2]:
