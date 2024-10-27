@@ -57,11 +57,12 @@ def update_task(task_id, elapsed_time=None, is_running=None, start_time=None, so
     if start_time is not None:
         c.execute(query('start_time'), (start_time, task_id))
     if sort_order is not None and sort_order >= 0:
-        # sort_orderがsort_order以上のタスクのsort_orderを1つずつ増やす
-        query = 'UPDATE tasks SET sort_order = sort_order + 1 WHERE sort_order >= ?'
-        c.execute(query, (sort_order,))
-        query = 'UPDATE tasks SET sort_order = ? WHERE id = ?'
-        c.execute(query, (sort_order, task_id))
+        current_sort_order = c.execute('SELECT sort_order FROM tasks WHERE id = ?', (task_id,)).fetchone()[0]
+        if current_sort_order < sort_order:
+            c.execute('UPDATE tasks SET sort_order = sort_order - 1 WHERE sort_order > ? AND sort_order <= ?', (current_sort_order, sort_order))
+        elif current_sort_order > sort_order:
+            c.execute('UPDATE tasks SET sort_order = sort_order + 1 WHERE sort_order >= ? AND sort_order < ?', (sort_order, current_sort_order))
+        c.execute(query('sort_order'), (sort_order, task_id))
     conn.commit()
     conn.close()
 
@@ -69,7 +70,9 @@ def update_task(task_id, elapsed_time=None, is_running=None, start_time=None, so
 def delete_task(task_id):
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
+    sort_order = c.execute('SELECT sort_order FROM tasks WHERE id = ?', (task_id,)).fetchone()[0]
     c.execute('DELETE FROM tasks WHERE id = ?', (task_id,))
+    c.execute('UPDATE tasks SET sort_order = sort_order - 1 WHERE sort_order > ?', (sort_order,))
     conn.commit()
     conn.close()
 
